@@ -28,12 +28,12 @@ pub struct ExplorerApp {
     dirty: bool,
     starfield: Starfield,
     applied_galaxy: Option<bool>,
+    window_pos: Option<(f32, f32)>,
+    window_size: Option<(f32, f32)>,
 }
 
 impl ExplorerApp {
-    pub fn new() -> Self {
-        let state = AppState::load();
-
+    pub fn new(state: AppState) -> Self {
         let mut tabs: Vec<Tab> = if state.settings.restore_tabs_on_startup && !state.tabs.is_empty()
         {
             state.tabs.into_iter().map(Tab::new).collect()
@@ -55,6 +55,8 @@ impl ExplorerApp {
             dirty: false,
             starfield: Starfield::new(),
             applied_galaxy: None,
+            window_pos: state.window_pos,
+            window_size: state.window_size,
         }
     }
 
@@ -64,6 +66,8 @@ impl ExplorerApp {
             tabs: self.tabs.iter().map(|t| t.current_path.clone()).collect(),
             active_tab: self.active_tab,
             closed_tabs: self.closed_tabs.clone(),
+            window_pos: self.window_pos,
+            window_size: self.window_size,
         };
         state.save();
     }
@@ -189,6 +193,13 @@ fn breadcrumb_segments(path: &Path) -> Vec<(String, PathBuf)> {
 
 impl eframe::App for ExplorerApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        ctx.input(|i| {
+            if let Some(rect) = i.viewport().outer_rect {
+                self.window_pos = Some((rect.min.x, rect.min.y));
+                self.window_size = Some((rect.width(), rect.height()));
+            }
+        });
+
         // Apply theme when the galaxy setting changes (and on first frame).
         if self.applied_galaxy != Some(self.settings.galaxy_mode) {
             theme::apply_style(ctx, self.settings.galaxy_mode);

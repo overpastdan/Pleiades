@@ -25,6 +25,10 @@ pub struct AppState {
     pub tabs: Vec<PathBuf>,
     pub active_tab: usize,
     pub closed_tabs: Vec<PathBuf>,
+    #[serde(default)]
+    pub window_pos: Option<(f32, f32)>,
+    #[serde(default)]
+    pub window_size: Option<(f32, f32)>,
 }
 
 impl AppState {

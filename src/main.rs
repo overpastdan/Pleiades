@@ -8,20 +8,28 @@ mod tab;
 mod theme;
 
 use eframe::egui;
+use settings::AppState;
 
 fn main() -> eframe::Result<()> {
+    let state = AppState::load();
+
+    let mut viewport = egui::ViewportBuilder::default()
+        .with_inner_size(state.window_size.unwrap_or([1000.0, 650.0].into()))
+        .with_title("Pleiades Explorer")
+        .with_icon(load_icon());
+    if let Some(pos) = state.window_pos {
+        viewport = viewport.with_position(pos);
+    }
+
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1000.0, 650.0])
-            .with_title("Pleiades Explorer")
-            .with_icon(load_icon()),
+        viewport,
         ..Default::default()
     };
 
     eframe::run_native(
         "Pleiades Explorer",
         options,
-        Box::new(|_cc| Ok(Box::new(app::ExplorerApp::new()))),
+        Box::new(|_cc| Ok(Box::new(app::ExplorerApp::new(state)))),
     )
 }
 
